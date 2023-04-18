@@ -7,7 +7,7 @@ class Provider(models.Model):
     name = models.CharField(max_length=200)
     website = models.CharField(max_length=500)
     last_update = models.DateTimeField()
-    logo = models.ImageField()
+    logo = models.ImageField(upload_to='/logos')
     transaction_time = models.IntegerField()
 
     def __str__(self):
