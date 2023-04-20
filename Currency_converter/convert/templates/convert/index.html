@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Currency Exchange Rates</title>
+	<style>
+		table {
+			border-collapse: collapse;
+			width: 100%;
+			margin-bottom: 20px;
+		}
+		th, td {
+			padding: 8px;
+			text-align: left;
+			border: 1px solid #ddd;
+		}
+		th {
+			background-color: #f2f2f2;
+		}
+	</style>
+</head>
+<body>
+	<h1>Currency Exchange Rates</h1>
+
+	<!-- Form to select currency pair -->
+	<form>
+		<label for="from_currency">From:</label>
+		<select id="from_currency">
+			{% if currency_list %}
+                {% for currency in currency_list %}
+                    <option value="{{ currency.code }}">{{ currency.code }}</option>
+                {% endfor %}
+            {% else %}
+                <p>No currencies are available.</p>
+            {% endif %}
+			<!-- Add more options for other currencies -->
+		</select>
+		<label for="to_currency">To:</label>
+		<select id="to_currency">
+			{% if currency_list %}
+                {% for currency in currency_list %}
+                    <option value="{{ currency.code }}">{{ currency.code }}</option>
+                {% endfor %}
+            {% else %}
+                <p>No currencies are available.</p>
+            {% endif %}
+			<!-- Add more options for other currencies -->
+		</select>
+		<button type="submit">Show Rates</button>
+	</form>
+
+	<!-- Table to display exchange rates -->
+	<table>
+		<thead>
+			<tr>
+				<th>Company</th>
+				<th>Exchange Rate</th>
+			</tr>
+		</thead>
+		<tbody id="exchange_rates">
+			<!-- Exchange rate data will be populated dynamically via JavaScript -->
+		</tbody>
+	</table>
+            {% if provider_list %}
+                {% for provider in provider_list %}
+                    <ul>
+                        <li>{{ provider.name }}</li>
+                    </ul>
+                    <ul>
+                        {% for rate in rate_list %}
+                            {% if rate.provider == provider.id %}
+                                <li>{{ rate }}</li>
+                                <li>{{ rate.exchange_rate}}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            {% else %}
+                <p>No Providers are available.</p>
+            {% endif %}
+	<!-- JavaScript to fetch and display exchange rates -->
+	<script>
+
+	</script>
+</body>
+</html>
