@@ -1,0 +1,41 @@
+{% extends 'convert/base.html' %}
+{% load static %}
+
+
+
+{% block content %}
+  <h1>Currency Rates: {{ currency_from.name }} to {{ currency_to.name }}</h1>
+
+  <table onload="highlight_highest_lowest_currency_page()" id="myTable" class="sortable">
+    <thead>
+      <tr>
+        <th>Provider</th>
+          <th>Transaction time (h)</th>
+        <th>Exchange Rate</th>
+        <th>Last updated</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for provider in provider_list %}
+         {% if not provider.is_neutral %}
+                     <tr>
+                         <td ><a href="{{ provider.website }}">{{ provider.name }}</a></td>
+                        <td >{{ provider.transaction_time }}</td>
+                      {% for rate in object_list %}
+                            {% if rate.provider == provider.id %}
+                                  <td class="rate_one" value="{{ rate.exchange_rate}}">{{ rate.exchange_rate }}</td>
+                                  <td>{{ rate.date_time }}</td>
+                          {% endif %}
+                      {% endfor %}
+                     </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+    <script>
+    // Add an event listener to the window object to call the function when the page finishes loading
+    window.addEventListener('load', function() {
+        highlight_highest_lowest_currency_page();
+    });
+</script>
+{% endblock %}

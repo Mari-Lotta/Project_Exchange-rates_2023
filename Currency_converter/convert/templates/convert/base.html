@@ -1,0 +1,45 @@
+{% load static %}     <!-- load all static files  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <!-- import style sheet  -->
+    <link rel="stylesheet" href="{% static 'convert/main.css' %}">
+    <!-- import javascript   -->
+    <script src="{% static 'convert/script.js' %}"></script>
+	<title>Currency Exchange Rates</title>
+
+</head>
+<body >
+    <nav>
+        <ul>
+            <!-- links for the main menu  -->
+            <li><a href="{% url 'convert:index' %}">Home</a></li>
+            <li><a href="{% url 'convert:about' %}">About</a></li>
+            <li><a href="{% url 'convert:contact' %}">Contact</a></li>
+        </ul>
+    </nav>
+   <div class="container">
+      <div class="side-menu">
+          <h3>Currencies:</h3>
+        <ul>
+            <!-- links for the side menu  -->
+            <li><a href="{% url 'convert:currency_rates' currency_from='USD' currency_to='PEN' %}">USD to PEN</a></li>
+            <li><a href="{% url 'convert:currency_rates' currency_from='PEN' currency_to='USD' %}">PEN to USD</a></li>
+        </ul>
+      </div>
+        <div class="page_content">
+      <div class="content">
+        {% block content %}
+                <!-- content form all pages extending this base  -->
+        {% endblock %}
+      </div>
+   </div>
+    </div>
+    <footer>
+        <p>&copy; 2023 ExchangeRates</p>
+    </footer>
+</body>
+</html>

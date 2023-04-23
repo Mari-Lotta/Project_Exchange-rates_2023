@@ -1,4 +1,3 @@
-import asyncio
 from _pydecimal import Decimal
 import datetime
 
@@ -21,10 +20,12 @@ class Scrapers:
         currency_usd = next((c for c in self.currency_list if c.code == 'USD'), None)
         currency_pen = next((c for c in self.currency_list if c.code == 'PEN'), None)
 
+        # xpath variable that identifies needed HTML element that is rendered by JavaScript
         xpath = "//div[@class=' flex flex-row items-center']"
 
         soup = self.get_soup_selenium(provider, xpath)
 
+        # locate the specific HTML elements that contain the price values
         data = soup.find_all('div', class_='flex flex-row items-center')
 
         buy_price = str(round(Decimal(data[0].find('span').text), 4))
@@ -34,22 +35,24 @@ class Scrapers:
         self.save_to_db(provider, currency_pen, currency_usd, sell_price)
 
     def scrape_dollarhouse(self):
-        provider = next((p for p in self.provider_list if p.name == "DollarHouse"), None)
+        provider = next(
+            (p for p in self.provider_list if p.name == "DollarHouse")
+            , None)
         currency_usd = next((c for c in self.currency_list if c.code == 'USD'), None)
         currency_pen = next((c for c in self.currency_list if c.code == 'PEN'), None)
 
         soup = self.get_soup(provider)
 
+        #  find the specific HTML element
         exchange_rate_container = soup.body.main.find('div', class_="exchange-rate-container")
 
+        #  extracts the buy and sell prices from the HTML element
         buy_price = exchange_rate_container.find(id="buy-exchange-rate").text.replace(',', '.')
         sell_price = str(
             round(1 / Decimal(exchange_rate_container.find(id="sell-exchange-rate").text.replace(',', '.')), 4))
 
         self.save_to_db(provider, currency_usd, currency_pen, buy_price)
         self.save_to_db(provider, currency_pen, currency_usd, sell_price)
-
-        pass
 
     def scrape_kambista(self):
         provider = next((p for p in self.provider_list if p.name == "Kambista"), None)
@@ -108,11 +111,6 @@ class Scrapers:
         soup = self.get_soup_selenium(provider, xpath)
 
         data = soup.find_all('div', class_='amount ng-tns-c16-0')
-        buy_price = data[0].text.replace("S/", '').strip()
-        print(buy_price)
-        sell_price = data[1].text.replace("S/", '').strip()
-        print(sell_price)
-
         buy_price = str(round(Decimal(data[0].text.replace("S/", '').strip()), 4))
         sell_price = str(round(1 / Decimal(data[1].text.replace("S/", '').strip()), 4))
 
@@ -136,10 +134,10 @@ class Scrapers:
         self.save_to_db(provider, currency_usd, currency_pen, buy_price)
         self.save_to_db(provider, currency_pen, currency_usd, sell_price)
 
-        pass
-
-    @staticmethod
-    def get_soup_selenium(provider, xpath):
+    def scrape_googlefinance(self, currency_code_from, currency_code_to):
+        provider = next((p for p in self.provider_list if p.name == "GoogleFinance"), None)
+        currency_from = next((c for c in self.currency_list if c.code == currency_code_from), None)
+        currency_to = next((c for c in self.currency_list if c.code == currency_code_to), None)
 
         options = webdriver.ChromeOptions()
         options.add_argument('--ignore-certificate-errors')
@@ -147,13 +145,42 @@ class Scrapers:
         options.add_argument('--headless')  # Optional if you want to run the scraper in the background
         driver = webdriver.Chrome(options=options)
         try:
+            driver.get("https://www.google.com/finance/quote/{}-{}".format(currency_code_from, currency_code_to))
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//div[@class='YMlKec fxKbKc']")))
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            data = soup.find_all('div', class_='YMlKec fxKbKc')
+            rate = str(round(Decimal(data[0].text.strip()), 4))
+            self.save_to_db(provider, currency_from, currency_to, rate)
+            pass
+        finally:
+            driver.quit()
+
+        pass
+
+    @staticmethod
+    def get_soup_selenium(provider, xpath):
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--incognito')
+        options.add_argument('--headless')
+
+        # open the Selenium web drive
+        driver = webdriver.Chrome(options=options)
+        try:
+            # navigate to website
             driver.get(getattr(provider, 'website'))
+            # wait for page to load
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.XPATH, xpath)))
+            # get page source after JavaScript has rendered
             html = driver.page_source
+            # parse HTML with Beautiful Soup
             soup = BeautifulSoup(html, 'html.parser')
             pass
         finally:
+            # close the Selenium web driver
             driver.quit()
 
         return soup
@@ -161,7 +188,11 @@ class Scrapers:
     @staticmethod
     def get_soup(provider):
         url = getattr(provider, 'website')
+
+        # retrieves  HTML content
         response = requests.get(url)
+
+        #Parsea the HTML content and create a BeautifulSoup object
         soup = BeautifulSoup(response.content, "html.parser")
         return soup
 
@@ -189,7 +220,16 @@ class Scrapers:
             rate.save()
 
     def run(self):
+        self.scrape_googlefinance('USD', 'PEN')
+        self.scrape_googlefinance('PEN', 'USD')
+
         self.scrape_tucambista()
+        self.scrape_kambista()
+        self.scrape_inkamoney()
+        self.scrape_rextie()
+        self.scrape_securex()
+        self.scrape_tkambio()
+        self.scrape_dollarhouse()
 
 
 #  async def run(self):

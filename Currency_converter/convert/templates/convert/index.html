@@ -1,85 +1,69 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Currency Exchange Rates</title>
-	<style>
-		table {
-			border-collapse: collapse;
-			width: 100%;
-			margin-bottom: 20px;
-		}
-		th, td {
-			padding: 8px;
-			text-align: left;
-			border: 1px solid #ddd;
-		}
-		th {
-			background-color: #f2f2f2;
-		}
-	</style>
-</head>
-<body>
+{% extends 'convert/base.html' %}
+
+{% block content %}
+
 	<h1>Currency Exchange Rates</h1>
-
-	<!-- Form to select currency pair -->
-	<form>
-		<label for="from_currency">From:</label>
-		<select id="from_currency">
-			{% if currency_list %}
-                {% for currency in currency_list %}
-                    <option value="{{ currency.code }}">{{ currency.code }}</option>
-                {% endfor %}
-            {% else %}
-                <p>No currencies are available.</p>
-            {% endif %}
-			<!-- Add more options for other currencies -->
-		</select>
-		<label for="to_currency">To:</label>
-		<select id="to_currency">
-			{% if currency_list %}
-                {% for currency in currency_list %}
-                    <option value="{{ currency.code }}">{{ currency.code }}</option>
-                {% endfor %}
-            {% else %}
-                <p>No currencies are available.</p>
-            {% endif %}
-			<!-- Add more options for other currencies -->
-		</select>
-		<button type="submit">Show Rates</button>
-	</form>
-
-	<!-- Table to display exchange rates -->
-	<table>
-		<thead>
+    <table id="neutrTable">
+        <thead>
 			<tr>
-				<th>Company</th>
-				<th>Exchange Rate</th>
+				<th > </th>
+				<th >USD to PEN</th>
+                <th >PEN to USD</th>
 			</tr>
 		</thead>
-		<tbody id="exchange_rates">
-			<!-- Exchange rate data will be populated dynamically via JavaScript -->
-		</tbody>
-	</table>
-            {% if provider_list %}
-                {% for provider in provider_list %}
-                    <ul>
-                        <li>{{ provider.name }}</li>
-                    </ul>
-                    <ul>
-                        {% for rate in rate_list %}
-                            {% if rate.provider == provider.id %}
-                                <li>{{ rate }}</li>
-                                <li>{{ rate.exchange_rate}}</li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                {% endfor %}
-            {% else %}
-                <p>No Providers are available.</p>
-            {% endif %}
-	<!-- JavaScript to fetch and display exchange rates -->
-	<script>
 
-	</script>
-</body>
-</html>
+                <tr >
+                    <td ><a href="{{ neutral_provider.website }}">{{ neutral_provider.name }}</a></td>
+                    {% for rate in USDtoPEN_rate_list %}
+                        {% if rate.provider == neutral_provider.id  %}
+                            <td class="neutr-rate" value="{{ rate.exchange_rate}}">{{ rate.exchange_rate}}</td>
+                        {% endif %}
+                    {% endfor %}
+                    {% for rate in PENtoUSD_rate_list %}
+                        {% if rate.provider == neutral_provider.id  %}
+                            <td class="neutr-rate" value="{{ rate.exchange_rate}}">{{ rate.exchange_rate}}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+
+
+    </table>
+	<!-- Table to display exchange rates -->
+    <table onload="highlight_highest_lowest()" id="myTable" class="sortable">
+        <thead>
+			<tr>
+				<th >Company</th>
+				<th >USD to PEN</th>
+                <th >PEN to USD</th>
+			</tr>
+		</thead>
+        {% if provider_list %}
+            {% for provider in provider_list %}
+                {% if not provider.is_neutral %}
+                <tr >
+                    <td ><a href="{{ provider.website }}">{{ provider.name }}</a></td>
+                    {% for rate in USDtoPEN_rate_list %}
+                        {% if rate.provider == provider.id  %}
+                            <td class="rate" value="{{ rate.exchange_rate}}">{{ rate.exchange_rate}}</td>
+                        {% endif %}
+                    {% endfor %}
+                    {% for rate in PENtoUSD_rate_list %}
+                        {% if rate.provider == provider.id  %}
+                            <td class="rate" value="{{ rate.exchange_rate}}">{{ rate.exchange_rate}}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No Providers are available.</p>
+        {% endif %}
+
+    </table>
+<script>
+    // Add an event listener to the window object to call the function when the page finishes loading
+    window.addEventListener('load', function() {
+        highlight_highest_lowest();
+    });
+</script>
+{% endblock %}
