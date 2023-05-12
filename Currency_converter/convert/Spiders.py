@@ -197,27 +197,13 @@ class Scrapers:
         return soup
 
     @staticmethod
-    def check_existance(provider, currency_from, currency_to, exchange_rate):
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        if CurrencyRate.objects.exists() and CurrencyRate.objects \
-                .filter(provider=provider,
-                        currency_to=currency_to,
-                        currency_from=currency_from,
-                        exchange_rate=exchange_rate) \
-                .exists():
-
-            return True
-        else:
-            return False
-
-    def save_to_db(self, provider, currency_from, currency_to, exchange_rate):
-        if not self.check_existance(provider, currency_from, currency_to, exchange_rate):
-            rate = CurrencyRate(
+    def save_to_db(provider, currency_from, currency_to, exchange_rate):
+        rate = CurrencyRate(
                 provider=provider,
                 currency_from=currency_from,
                 currency_to=currency_to,
                 exchange_rate=exchange_rate)
-            rate.save()
+        rate.save()
 
     def run(self):
         self.scrape_googlefinance('USD', 'PEN')
@@ -232,11 +218,6 @@ class Scrapers:
         self.scrape_dollarhouse()
 
 
-#  async def run(self):
-#     tasks = [self.scrape_dollarhouse()]
-#    await asyncio.gather(*tasks)
-
-
 if __name__ == '__main__':
     my_object = Scrapers()
-    my_object.scrape_tucambista()
+    my_object.run()

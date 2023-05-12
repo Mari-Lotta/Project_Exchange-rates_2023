@@ -60,10 +60,21 @@
         {% endif %}
 
     </table>
+    <div id="charts" style="display: flex; flex-direction: row;">
+        {% if chart1 %}
+            <div style="flex: 1;">{{ chart1|safe }}</div>
+        {% endif %}
+        {% if chart2 %}
+            <div style="flex: 1;">{{ chart2|safe }}</div>
+        {% endif %}
+    </div>
+
 <script>
     // Add an event listener to the window object to call the function when the page finishes loading
     window.addEventListener('load', function() {
         highlight_highest_lowest();
     });
+
 </script>
+
 {% endblock %}

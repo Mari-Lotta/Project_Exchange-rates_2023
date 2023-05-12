@@ -32,6 +32,12 @@
     {% endfor %}
     </tbody>
   </table>
+    <div id="chart" style="display: flex; flex-direction: row;">
+        {% if chart %}
+            <div style="flex: 1;">{{ chart|safe }}</div>
+        {% endif %}
+
+    </div>
     <script>
     // Add an event listener to the window object to call the function when the page finishes loading
     window.addEventListener('load', function() {
